@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BookNow – Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-login">
+
+  <div class="login-card">
+    <!-- Logo -->
+    <div class="login-logo">
+      <span class="brand-icon">🗓</span>
+      <span class="brand-name">BookNow</span>
+    </div>
+
+    <h2 class="login-title">Welcome Back</h2>
+    <p class="login-sub">Sign in to manage your appointments</p>
+
+    <!-- Email -->
+    <div class="form-field">
+      <label for="email">Email Address</label>
+      <div class="input-wrap">
+        <span class="input-icon">✉</span>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+    </div>
+
+    <!-- Password -->
+    <div class="form-field">
+      <label for="password">Password</label>
+      <div class="input-wrap">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+    </div>
+
+    <!-- Remember / Forgot -->
+    <div class="login-row">
+      <label class="check-label">
+        <input type="checkbox" id="remember"> Remember me
+      </label>
+      <a href="#" class="forgot-link">Forgot password?</a>
+    </div>
+
+    <!-- Error message -->
+    <p id="error-msg" class="error-msg" style="display:none"></p>
+
+    <!-- Sign In -->
+    <button class="btn-primary btn-full" id="signin-btn" onclick="login()">Sign In</button>
+
+    <p class="signup-row">Don't have an account? <a href="#">Sign up</a></p>
+    <a href="index.html" class="back-home">Back to Home</a>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

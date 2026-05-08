@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BookNow – Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-dash">
+
+  <!-- NAV -->
+  <nav class="navbar">
+    <a href="index.html" class="brand">
+      <span class="brand-icon">🗓</span>
+      <span class="brand-name">BookNow</span>
+    </a>
+    <div class="nav-right">
+      <span class="user-info">
+        <span class="user-avatar">👤</span>
+        <span id="username-display">John Doe</span>
+      </span>
+      <a href="login.html" class="logout-btn" title="Logout">⇥</a>
+    </div>
+  </nav>
+
+  <main class="dash-main">
+
+    <!-- Header row -->
+    <div class="dash-header-row">
+      <div>
+        <h1 class="dash-title">My Appointments</h1>
+        <p class="dash-sub">Manage and track all your bookings</p>
+      </div>
+      <button class="btn-primary" onclick="openModal()">＋ &nbsp;New Appointment</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <p class="stat-label">Total Appointments</p>
+        <p class="stat-num" id="stat-total">0</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Upcoming</p>
+        <p class="stat-num indigo" id="stat-upcoming">0</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Completed</p>
+        <p class="stat-num green" id="stat-completed">0</p>
+      </div>
+    </div>
+
+    <!-- Upcoming -->
+    <section class="apt-section">
+      <h2 class="section-title">Upcoming Appointments</h2>
+      <div id="upcoming-list"></div>
+      <p id="no-upcoming" class="empty-msg">No upcoming appointments.</p>
+    </section>
+
+    <!-- Past -->
+    <section class="apt-section">
+      <h2 class="section-title">Past Appointments</h2>
+      <div id="past-list"></div>
+      <p id="no-past" class="empty-msg">No past appointments.</p>
+    </section>
+
+  </main>
+
+  <!-- NEW APPOINTMENT MODAL -->
+  <div id="modal-overlay" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-card">
+      <h3 class="modal-title">New Appointment</h3>
+
+      <div class="form-field">
+        <label for="apt-title">Title</label>
+        <input type="text" id="apt-title" placeholder="e.g. Dental Checkup">
+      </div>
+      <div class="form-field">
+        <label for="apt-date">Date</label>
+        <input type="date" id="apt-date">
+      </div>
+      <div class="form-field">
+        <label for="apt-time">Time</label>
+        <input type="time" id="apt-time">
+      </div>
+      <div class="form-field">
+        <label for="apt-location">Location</label>
+        <input type="text" id="apt-location" placeholder="e.g. Downtown Clinic">
+      </div>
+
+      <p id="modal-error" class="error-msg" style="display:none"></p>
+
+      <div class="modal-actions">
+        <button class="btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" onclick="addAppointment()">Book Appointment</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    // Seed appointments
+    const appointments = [
+      { id: 1, title: "Dental Checkup",  date: "2026-05-12", time: "10:00", location: "Downtown Dental Clinic",  status: "upcoming" },
+      { id: 2, title: "Business Meeting", date: "2026-05-15", time: "14:30", location: "Conference Room A",       status: "upcoming" },
+      { id: 3, title: "Hair Appointment", date: "2026-05-05", time: "11:00", location: "Style Studio",            status: "completed" },
+    ];
+    let nextId = 4;
+
+    function renderAll() {
+      const today = new Date().toISOString().split("T")[0];
+      const upcoming = appointments.filter(a => a.date >= today && a.status !== "completed");
+      const past     = appointments.filter(a => a.date <  today || a.status === "completed");
+
+      document.getElementById("stat-total").textContent    = appointments.length;
+      document.getElementById("stat-upcoming").textContent = upcoming.length;
+      document.getElementById("stat-completed").textContent = past.length;
+
+      renderList("upcoming-list", "no-upcoming", upcoming);
+      renderList("past-list",     "no-past",     past);
+    }
+
+    function renderList(listId, emptyId, items) {
+      const list  = document.getElementById(listId);
+      const empty = document.getElementById(emptyId);
+      list.innerHTML = "";
+      if (items.length === 0) { empty.style.display = "block"; return; }
+      empty.style.display = "none";
+      items.forEach(apt => {
+        const div = document.createElement("div");
+        div.className = "apt-card";
+        div.innerHTML = `
+          <div class="apt-card-top">
+            <div>
+              <span class="apt-name">${apt.title}</span>
+              <span class="badge ${apt.status}">${apt.status}</span>
+            </div>
+            <div class="apt-menu" onclick="toggleMenu(${apt.id})">⋮
+              <div class="apt-dropdown" id="menu-${apt.id}">
+                <button onclick="deleteApt(${apt.id})">🗑 Delete</button>
+              </div>
+            </div>
+          </div>
+          <div class="apt-details">
+            <span>📅 ${formatDate(apt.date)}</span>
+            <span>🕐 ${formatTime(apt.time)}</span>
+            <span>📍 ${apt.location}</span>
+          </div>`;
+        list.appendChild(div);
+      });
+    }
+
+    function formatDate(d) {
+      return new Date(d + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    }
+    function formatTime(t) {
+      const [h, m] = t.split(":").map(Number);
+      const ampm = h >= 12 ? "PM" : "AM";
+      return `${h % 12 || 12}:${String(m).padStart(2,"0")} ${ampm}`;
+    }
+
+    function openModal() {
+      document.getElementById("modal-overlay").classList.add("open");
+      document.getElementById("apt-date").min = new Date().toISOString().split("T")[0];
+    }
+    function closeModal(e) {
+      if (!e || e.target === document.getElementById("modal-overlay")) {
+        document.getElementById("modal-overlay").classList.remove("open");
+        document.getElementById("modal-error").style.display = "none";
+      }
+    }
+
+    function addAppointment() {
+      const title    = document.getElementById("apt-title").value.trim();
+      const date     = document.getElementById("apt-date").value;
+      const time     = document.getElementById("apt-time").value;
+      const location = document.getElementById("apt-location").value.trim();
+      const err      = document.getElementById("modal-error");
+
+      if (!title || !date || !time || !location) {
+        err.textContent = "Please fill in all fields.";
+        err.style.display = "block";
+        return;
+      }
+      appointments.push({ id: nextId++, title, date, time, location, status: "upcoming" });
+      closeModal();
+      renderAll();
+      // reset
+      ["apt-title","apt-date","apt-time","apt-location"].forEach(id => document.getElementById(id).value = "");
+    }
+
+    function deleteApt(id) {
+      const i = appointments.findIndex(a => a.id === id);
+      if (i !== -1) appointments.splice(i, 1);
+      renderAll();
+    }
+
+    function toggleMenu(id) {
+      document.querySelectorAll(".apt-dropdown").forEach(d => {
+        if (d.id !== `menu-${id}`) d.classList.remove("show");
+      });
+      document.getElementById(`menu-${id}`).classList.toggle("show");
+    }
+
+    document.addEventListener("click", e => {
+      if (!e.target.closest(".apt-menu")) {
+        document.querySelectorAll(".apt-dropdown").forEach(d => d.classList.remove("show"));
+      }
+    });
+
+    renderAll();
+  </script>
+
+</body>
+</html>
